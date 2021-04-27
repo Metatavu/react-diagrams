@@ -40,7 +40,10 @@ export class LabelWidget extends React.Component<LabelWidgetProps> {
 	findPathAndRelativePositionToRenderLabel = (index: number): { path: SVGPathElement; position: number } => {
 		// an array to hold all path lengths, making sure we hit the DOM only once to fetch this information
 		const link = this.props.label.getParent();
-		const lengths = link.getRenderedPath().map((path) => path.getTotalLength());
+		const lengths = link.getRenderedPath().map((svg: any) => {
+      const path = svg.children.length ? svg.children[0] : undefined;
+      return path?.getTotalLength() || 0;
+    });
 
 		// calculate the point where we want to display the label
 		let labelPosition =
@@ -69,14 +72,16 @@ export class LabelWidget extends React.Component<LabelWidgetProps> {
 			return;
 		}
 
-		const { path, position } = found;
+		const { position } = found;
+    const svg = found.path;
+    const path = svg.children.length ? svg.children[0] as any : undefined;
 
 		const labelDimensions = {
 			width: this.ref.current.offsetWidth,
 			height: this.ref.current.offsetHeight
 		};
 
-		const pathCentre = path.getPointAtLength(position);
+		const pathCentre = path?.getPointAtLength(position) || 0;
 
 		const labelCoordinates = {
 			x: pathCentre.x - labelDimensions.width / 2 + this.props.label.getOptions().offsetX,
